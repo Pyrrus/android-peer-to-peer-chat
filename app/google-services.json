@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "366531082834",
+    "firebase_url": "https://bluetooth-chat-d5c71.firebaseio.com",
+    "project_id": "bluetooth-chat-d5c71",
+    "storage_bucket": "bluetooth-chat-d5c71.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:366531082834:android:cdb57a5a8d28b4f7",
+        "android_client_info": {
+          "package_name": "agorbahn.peer_to_peer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "366531082834-nq47vt4hre1427vlun1nl9eqa0fuv3ja.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "agorbahn.peer_to_peer",
+            "certificate_hash": "8F9079839C06843F16630000F4DB9E453DCC7E82"
+          }
+        },
+        {
+          "client_id": "366531082834-cggemahmvehrp3srd25jkvr23gsiblmq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPaLf4ze0LV07TX9d_IkyVcc_CAfDOzKk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "366531082834-cggemahmvehrp3srd25jkvr23gsiblmq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
