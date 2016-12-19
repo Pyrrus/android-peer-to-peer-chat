@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,12 +13,14 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import agorbahn.peer_to_peer.R;
+import agorbahn.peer_to_peer.adapters.BluetoothListDialogs;
 
 public class MainActivity extends AppCompatActivity {
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothDevice mDevice;
     private Handler mHandler;
+    FragmentManager fm = getSupportFragmentManager();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bluetoothSearch() {
-
+        BluetoothListDialogs test = new BluetoothListDialogs(mBluetoothAdapter);
+        test.show(this);
     }
 }
