@@ -24,9 +24,9 @@ import java.util.ArrayList;
 
 import agorbahn.peer_to_peer.Constants;
 import agorbahn.peer_to_peer.R;
-import agorbahn.peer_to_peer.adapters.BlowfishEncryption;
 import agorbahn.peer_to_peer.adapters.BluetoothListDialogs;
 import agorbahn.peer_to_peer.adapters.ChatController;
+import agorbahn.peer_to_peer.helper.AESHelper;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
@@ -184,6 +184,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (message.length() > 0) {
+
             byte[] send = makeJSON(message).getBytes();
             chatController.write(send);
         }
@@ -191,10 +192,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private String makeJSON(String message) {
         JSONObject json = new JSONObject();
-        BlowfishEncryption encryption = new BlowfishEncryption();
+        AESHelper encryption = new AESHelper();
         String random = encryption.randomKey();
-        message = encryption.encryptBlowfish(message, random);
-        Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG);
+        try {
+            message = encryption.encrypt(random, message);
+            random = encryption.encrypt(Constants.ENCRYPT_SEED, random);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         try {
             json.put("key", random);
             json.put("message", message);
@@ -207,15 +212,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void jsonMessage(String jsonData) {
-        BlowfishEncryption encryption = new BlowfishEncryption();
+        AESHelper encryption = new AESHelper();
         try {
             JSONObject messageJSON = new JSONObject(jsonData);
             String name = messageJSON.get("from").toString();
-            String message = encryption.decryptBlowfish(messageJSON.get("message").toString(),  messageJSON.get("key").toString());
+            String key = encryption.decrypt(Constants.ENCRYPT_SEED, messageJSON.get("key").toString());
+            String message =  encryption.decrypt(key, messageJSON.get("message").toString());
             mChatMessages.add(name + ":  " + message);
             mChatAdapter.notifyDataSetChanged();
 
         } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
