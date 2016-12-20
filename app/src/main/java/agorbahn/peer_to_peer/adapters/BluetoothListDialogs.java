@@ -26,6 +26,8 @@ public class BluetoothListDialogs {
     private BluetoothAdapter mBluetoothAdapter;
     private ArrayAdapter<String> mDiscoveredDevices;
     private BroadcastReceiver mDiscovery;
+    private BluetoothDevice mBluetoothDevice;
+    private ChatController mChatController;
 
     public void show(Context context) {
         mDialog = new Dialog(context);
@@ -100,8 +102,10 @@ public class BluetoothListDialogs {
     }
 
 
-    public BluetoothListDialogs(BluetoothAdapter mBluetoothAdapter) {
+    public BluetoothListDialogs(BluetoothAdapter mBluetoothAdapter, ChatController chatController) {
         this.mBluetoothAdapter = mBluetoothAdapter;
+        this.mChatController = chatController;
+
         mDiscovery = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -114,7 +118,7 @@ public class BluetoothListDialogs {
                     }
                 } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                     if (mDiscoveredDevices.getCount() == 0) {
-                        mDiscoveredDevices.add("No devices have been paired");
+                        mDiscoveredDevices.add("No devices found");
                     }
                 }
             }
@@ -123,8 +127,15 @@ public class BluetoothListDialogs {
 
     private void connectToDevice(String deviceAddress) {
         mBluetoothAdapter.cancelDiscovery();
-        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(deviceAddress);
-
+        mBluetoothDevice = mBluetoothAdapter.getRemoteDevice(deviceAddress);
+        mChatController.connect(mBluetoothDevice);
     }
 
+    public BluetoothDevice getBluetoothDevice() {
+        return mBluetoothDevice;
+    }
+
+    public ChatController getChatController() {
+        return mChatController;
+    }
 }
