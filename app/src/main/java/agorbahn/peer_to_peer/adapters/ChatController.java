@@ -189,13 +189,10 @@ public class ChatController {
                         switch (mState) {
                             case Constants.STATE_LISTEN:
                             case Constants.STATE_CONNECTING:
-                                // start the connected thread.
                                 connected(socket, socket.getRemoteDevice());
                                 break;
                             case Constants.STATE_NONE:
                             case Constants.STATE_CONNECTED:
-                                // Either not ready or already connected. Terminate
-                                // new socket.
                                 try {
                                     socket.close();
                                 } catch (IOException e) {
@@ -232,11 +229,8 @@ public class ChatController {
 
         public void run() {
             setName("ConnectThread");
-
-            // Always cancel discovery because it will slow down a connection
             mBluetoothAdapter.cancelDiscovery();
 
-            // Make a connection to the BluetoothSocket
             try {
                 mSocket.connect();
             } catch (IOException e) {
@@ -248,12 +242,10 @@ public class ChatController {
                 return;
             }
 
-            // Reset the ConnectThread because we're done
             synchronized (ChatController.this) {
                 mConnectThread = null;
             }
 
-            // Start the connected thread
             connected(mSocket, mDevice);
         }
 
@@ -295,14 +287,12 @@ public class ChatController {
                             buffer).sendToTarget();
                 } catch (IOException e) {
                     connectionLost();
-                    // Start the service over to restart listening mode
                     ChatController.this.start();
                     break;
                 }
             }
         }
 
-        // write to OutputStream
         public void write(byte[] buffer) {
             try {
                 outputStream.write(buffer);

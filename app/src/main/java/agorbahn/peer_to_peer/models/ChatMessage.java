@@ -10,10 +10,12 @@ public class ChatMessage {
     private String messageText;
     private long messageTime;
     private String messageUser;
+    private String key;
 
-    public ChatMessage(String messageText, String messageUser) {
+    public ChatMessage(String messageText, String messageUser, String key) {
         this.messageText = messageText;
         this.messageUser = messageUser;
+        this.key = key;
         messageTime = new Date().getTime();
     }
 

@@ -17,10 +17,14 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import agorbahn.peer_to_peer.Constants;
 import agorbahn.peer_to_peer.R;
+import agorbahn.peer_to_peer.adapters.BlowfishEncryption;
 import agorbahn.peer_to_peer.adapters.BluetoothListDialogs;
 import agorbahn.peer_to_peer.adapters.ChatController;
 import butterknife.Bind;
@@ -72,14 +76,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case Constants.MESSAGE_WRITE:
                         byte[] writeBuf = (byte[]) msg.obj;
                         String writeMessage = new String(writeBuf);
-                        mChatMessages.add("Me: " + writeMessage);
-                        mChatAdapter.notifyDataSetChanged();
+                        jsonMessage(writeMessage);
                         break;
                     case Constants.MESSAGE_READ:
                         byte[] readBuf = (byte[]) msg.obj;
                         String readMessage = new String(readBuf, 0, msg.arg1);
-                        mChatMessages.add(mDevice.getName() + ":  " + readMessage);
-                        mChatAdapter.notifyDataSetChanged();
+                        jsonMessage(readMessage);
                         break;
                     case Constants.MESSAGE_DEVICE_OBJECT:
                         mDevice = msg.getData().getParcelable(Constants.DEVICE_OBJECT);
@@ -182,8 +184,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (message.length() > 0) {
-            byte[] send = message.getBytes();
+            byte[] send = makeJSON(message).getBytes();
             chatController.write(send);
         }
+    }
+
+    private String makeJSON(String message) {
+        JSONObject json = new JSONObject();
+        BlowfishEncryption encryption = new BlowfishEncryption();
+        String random = encryption.randomKey();
+        message = encryption.encryptBlowfish(message, random);
+        Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG);
+        try {
+            json.put("key", random);
+            json.put("message", message);
+            json.put("from", "Adam");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return json.toString();
+    }
+
+    private void jsonMessage(String jsonData) {
+        BlowfishEncryption encryption = new BlowfishEncryption();
+        try {
+            JSONObject messageJSON = new JSONObject(jsonData);
+            String name = messageJSON.get("from").toString();
+            String message = encryption.decryptBlowfish(messageJSON.get("message").toString(),  messageJSON.get("key").toString());
+            mChatMessages.add(name + ":  " + message);
+            mChatAdapter.notifyDataSetChanged();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
     }
 }
