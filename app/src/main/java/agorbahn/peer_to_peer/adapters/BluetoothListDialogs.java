@@ -37,8 +37,6 @@ public class BluetoothListDialogs {
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         mDialog.setContentView(R.layout.layout_bluetooth);
 
-        mDialog.setTitle("Bluetooth Devices");
-
         if (mBluetoothAdapter.isDiscovering()) {
             mBluetoothAdapter.cancelDiscovery();
         }

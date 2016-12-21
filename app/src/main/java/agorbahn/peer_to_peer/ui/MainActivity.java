@@ -235,7 +235,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void sendMessage(String message) {
         if (chatController.getState() != Constants.STATE_CONNECTED) {
             Toast.makeText(this, "Connection was lost!", Toast.LENGTH_SHORT).show();
-            return;
+            if (mDevice != null) {
+                chatController.connect(mDevice);
+                byte[] send = makeJSON(message).getBytes();
+                chatController.write(send);
+            }
         }
 
         if (message.length() > 0) {
