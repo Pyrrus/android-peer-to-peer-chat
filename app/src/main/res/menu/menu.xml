@@ -3,10 +3,12 @@
     xmlns:optionmenu="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_bluetooth"
+        android:icon="@mipmap/ic_bluetooth_white_24dp"
         android:title="Bluetooth"
         optionmenu:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_log"
-        android:title="Logout"
+        android:title="Account"
+        android:icon="@mipmap/ic_account_box_white_24dp"
         optionmenu:showAsAction="ifRoom" />
 </menu>
