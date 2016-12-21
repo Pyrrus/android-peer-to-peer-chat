@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -16,10 +17,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,7 +35,9 @@ import agorbahn.peer_to_peer.R;
 import agorbahn.peer_to_peer.adapters.BluetoothListDialogs;
 import agorbahn.peer_to_peer.adapters.ChatController;
 import agorbahn.peer_to_peer.adapters.LogDialogs;
+import agorbahn.peer_to_peer.adapters.MessageAdapter;
 import agorbahn.peer_to_peer.helper.AESHelper;
+import agorbahn.peer_to_peer.models.ChatMessage;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
@@ -41,15 +47,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private BluetoothDevice mDevice;
     private Handler mHandler;
     private ChatController chatController;
-    private Menu mMenu;
-    private MenuItem mBluetooth;
-    private ArrayAdapter<String> mChatAdapter;
-    private ArrayList<String> mChatMessages;
+    private MessageAdapter mChatAdapter;
+    private ArrayList<ChatMessage> mChatMessages;
     @Bind(R.id.list_of_messages) ListView mListView;
     @Bind(R.id.send) Button mSend;
     @Bind(R.id.input) EditText mInput;
     FirebaseUser userFire;
-
+    private FirebaseListAdapter<ChatMessage> fireAdapter;
+    AESHelper mEncryption;
     String mUser;
 
     @Override
@@ -63,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             finish();
         }
 
+        mEncryption = new AESHelper();
         userFire = FirebaseAuth.getInstance()
                 .getCurrentUser();
 
@@ -70,8 +76,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mUser = FirebaseAuth.getInstance()
                     .getCurrentUser()
                     .getDisplayName();
+
+            fireAdapter = new FirebaseListAdapter<ChatMessage>(this, ChatMessage.class,
+                    R.layout.message, FirebaseDatabase.getInstance().getReference()) {
+                @Override
+                protected void populateView(View v, ChatMessage model, int position) {
+                    // Get references to the views of message.xml
+                    TextView messageText = (TextView)v.findViewById(R.id.message_text);
+                    TextView messageUser = (TextView)v.findViewById(R.id.message_user);
+                    TextView messageTime = (TextView)v.findViewById(R.id.message_time);
+
+                    try {
+                        String key = mEncryption.decrypt(Constants.ENCRYPT_SEED, model.getKey());
+                        String message =  mEncryption.decrypt(key, model.getMessageText());
+                        // Set their text
+                        messageText.setText(message);
+                        messageUser.setText(model.getMessageUser());
+
+                        // Format the date before showing it
+                        messageTime.setText(DateFormat.format("dd-MM-yyyy (HH:mm:ss)",
+                                model.getMessageTime()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+
+            mListView.setAdapter(fireAdapter);
+
+            Toast.makeText(this, "Welcome back " + mUser, Toast.LENGTH_SHORT).show();
         } else {
             mUser = "";
+            mChatMessages = new ArrayList<ChatMessage>();
+            mChatAdapter = new MessageAdapter(this, mChatMessages);
+            mListView.setAdapter(mChatAdapter);
         }
 
 
@@ -96,12 +134,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case Constants.MESSAGE_WRITE:
                         byte[] writeBuf = (byte[]) msg.obj;
                         String writeMessage = new String(writeBuf);
-                        jsonMessage(writeMessage);
+                        jsonMessage(writeMessage, true);
                         break;
                     case Constants.MESSAGE_READ:
                         byte[] readBuf = (byte[]) msg.obj;
                         String readMessage = new String(readBuf, 0, msg.arg1);
-                        jsonMessage(readMessage);
+                        jsonMessage(readMessage, false);
                         break;
                     case Constants.MESSAGE_DEVICE_OBJECT:
                         mDevice = msg.getData().getParcelable(Constants.DEVICE_OBJECT);
@@ -118,11 +156,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
         mSend.setOnClickListener(this);
-
-        //set chat adapter
-        mChatMessages = new ArrayList<>();
-        mChatAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mChatMessages);
-        mListView.setAdapter(mChatAdapter);
     }
 
     @Override
@@ -148,9 +181,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         inflater.inflate(R.menu.menu, menu);
 
         super.onCreateOptionsMenu(menu);
-
-        this.mMenu = menu;
-
         return true;
     }
 
@@ -207,7 +237,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (message.length() > 0) {
-
             byte[] send = makeJSON(message).getBytes();
             chatController.write(send);
         }
@@ -215,18 +244,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private String makeJSON(String message) {
         JSONObject json = new JSONObject();
-        AESHelper encryption = new AESHelper();
-        String random = encryption.randomKey();
+        String random = mEncryption.randomKey();
         try {
-            message = encryption.encrypt(random, message);
-            random = encryption.encrypt(Constants.ENCRYPT_SEED, random);
+            message = mEncryption.encrypt(random, message);
+            random = mEncryption.encrypt(Constants.ENCRYPT_SEED, random);
         } catch (Exception e) {
             e.printStackTrace();
         }
         try {
             json.put("key", random);
             json.put("message", message);
-            json.put("from", "Adam");
+            if (userFire != null) {
+                json.put("from", mUser);
+            } else {
+                json.put("from", mBluetoothAdapter.getName());
+            }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -234,22 +267,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return json.toString();
     }
 
-    private void jsonMessage(String jsonData) {
-        AESHelper encryption = new AESHelper();
+    private void jsonMessage(String jsonData, boolean write) {
         try {
             JSONObject messageJSON = new JSONObject(jsonData);
-            String name = messageJSON.get("from").toString();
-            String key = encryption.decrypt(Constants.ENCRYPT_SEED, messageJSON.get("key").toString());
-            String message =  encryption.decrypt(key, messageJSON.get("message").toString());
-            mChatMessages.add(name + ":  " + message);
-            mChatAdapter.notifyDataSetChanged();
+            ChatMessage message = new ChatMessage(messageJSON.get("message").toString(), messageJSON.get("from").toString(), messageJSON.get("key").toString());
+
+            if (userFire != null && !write) {
+                FirebaseDatabase.getInstance()
+                        .getReference()
+                        .push()
+                        .setValue(message);
+            } else {
+                mChatMessages.add(message);
+                mChatAdapter.notifyDataSetChanged();
+            }
 
         } catch (JSONException e) {
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
     }
 }

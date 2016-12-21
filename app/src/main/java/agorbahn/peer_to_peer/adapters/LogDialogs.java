@@ -19,11 +19,11 @@ import agorbahn.peer_to_peer.ui.MainActivity;
 public class LogDialogs extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        // Use the Builder class for convenient dialog construction
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             builder.setMessage("login")
-                    .setPositiveButton("Login", new DialogInterface.OnClickListener() {
+                    .setPositiveButton("Login to your accout", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             Intent intent = new Intent(getActivity(), LoginActivity.class);
                             startActivity(intent);
@@ -31,12 +31,11 @@ public class LogDialogs extends DialogFragment {
                     })
                     .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            // User cancelled the dialog
                         }
                     });
         } else {
             builder.setMessage("Logout")
-                    .setPositiveButton("Logout", new DialogInterface.OnClickListener() {
+                    .setPositiveButton("Logout from your accout", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             FirebaseAuth.getInstance().signOut();
                             Intent intent = new Intent(getActivity(), MainActivity.class);
@@ -46,11 +45,10 @@ public class LogDialogs extends DialogFragment {
                     })
                     .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            // User cancelled the dialog
+
                         }
                     });
         }
-        // Create the AlertDialog object and return it
         return builder.create();
     }
 }

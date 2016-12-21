@@ -19,6 +19,14 @@ public class ChatMessage {
         messageTime = new Date().getTime();
     }
 
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
     public String getMessageText() {
         return messageText;
     }
