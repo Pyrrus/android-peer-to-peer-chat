@@ -1,5 +1,6 @@
 package agorbahn.peer_to_peer.ui;
 
+import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
@@ -29,6 +30,7 @@ import agorbahn.peer_to_peer.Constants;
 import agorbahn.peer_to_peer.R;
 import agorbahn.peer_to_peer.adapters.BluetoothListDialogs;
 import agorbahn.peer_to_peer.adapters.ChatController;
+import agorbahn.peer_to_peer.adapters.LogDialogs;
 import agorbahn.peer_to_peer.helper.AESHelper;
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -132,7 +134,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (id == R.id.action_log) {
-            
+            LogDialogs test = new LogDialogs();
+            FragmentManager manager = getFragmentManager();
+
+            test.show(manager, "");
         }
         return super.onOptionsItemSelected(item);
     }
