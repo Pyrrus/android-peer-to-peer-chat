@@ -2,34 +2,46 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#C0C0C0"
-    android:orientation="vertical">
+    android:background="@color/colorPrimaryDark"
+    android:orientation="vertical"
+    android:paddingLeft="10dp"
+    android:paddingTop="10dp"
+    android:paddingRight="10dp"
+    android:paddingBottom="10dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Paired Devices" />
+        android:text="Paired Devices"
+        android:textColor="@color/colorPrimaryLight" />
 
     <ListView
         android:id="@+id/paired"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorPrimaryLight"
+        />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Discovered Devices" />
+        android:text="Discovered Devices"
+        android:textColor="@color/colorPrimaryLight" />
 
     <ListView
         android:id="@+id/discovered"
         android:layout_width="match_parent"
-        android:layout_height="200dp" />
+        android:layout_height="200dp"
+        android:textColor="@color/colorPrimaryLight"
+        />
 
     <Button
         android:id="@+id/cancelButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cancel" />
+        android:text="Cancel"
+        android:textColor="@color/colorPrimaryLight"
+        />
 
 
 </LinearLayout>

@@ -7,7 +7,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -31,7 +34,9 @@ public class BluetoothListDialogs {
 
     public void show(Context context) {
         mDialog = new Dialog(context);
+        mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         mDialog.setContentView(R.layout.layout_bluetooth);
+
         mDialog.setTitle("Bluetooth Devices");
 
         if (mBluetoothAdapter.isDiscovering()) {
@@ -39,8 +44,30 @@ public class BluetoothListDialogs {
         }
         mBluetoothAdapter.startDiscovery();
 
-        ArrayAdapter<String> pairedDevicesAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1);
-        mDiscoveredDevices = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1);
+        ArrayAdapter<String> pairedDevicesAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1){
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view =super.getView(position, convertView, parent);
+
+                TextView textView=(TextView) view.findViewById(android.R.id.text1);
+                textView.setTextColor(Color.WHITE);
+
+                return view;
+            }
+        };
+        mDiscoveredDevices = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1){
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view =super.getView(position, convertView, parent);
+
+                TextView textView=(TextView) view.findViewById(android.R.id.text1);
+                textView.setTextColor(Color.WHITE);
+
+                return view;
+            }
+        };
 
         ListView paired = (ListView) mDialog.findViewById(R.id.paired);
         ListView discover = (ListView) mDialog.findViewById(R.id.discovered);
@@ -89,6 +116,8 @@ public class BluetoothListDialogs {
                 mDialog.dismiss();
             }
         });
+
+        mDialog.findViewById(R.id.cancelButton).setBackgroundResource(R.color.colorAccent);
 
         mDialog.findViewById(R.id.cancelButton).setOnClickListener(new View.OnClickListener() {
 
