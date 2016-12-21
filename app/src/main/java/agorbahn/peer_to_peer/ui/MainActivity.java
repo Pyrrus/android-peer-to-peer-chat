@@ -17,6 +17,9 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -43,6 +46,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Bind(R.id.list_of_messages) ListView mListView;
     @Bind(R.id.send) Button mSend;
     @Bind(R.id.input) EditText mInput;
+    FirebaseUser userFire;
+
+    String mUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +60,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Bluetooth is not available!", Toast.LENGTH_SHORT).show();
             finish();
         }
+
+        userFire = FirebaseAuth.getInstance()
+                .getCurrentUser();
+
+        if (userFire != null) {
+            mUser = FirebaseAuth.getInstance()
+                    .getCurrentUser()
+                    .getDisplayName();
+        } else {
+            mUser = "";
+        }
+
 
         mHandler = new Handler(new Handler.Callback() {
             @Override
@@ -108,13 +126,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_logout) {
-            return true;
-        }
-
         if (id == R.id.action_bluetooth) {
             bluetoothSearch();
             return true;
+        }
+
+        if (id == R.id.action_log) {
+            
         }
         return super.onOptionsItemSelected(item);
     }
@@ -122,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_tap, menu);
+        inflater.inflate(R.menu.menu, menu);
 
         super.onCreateOptionsMenu(menu);
 

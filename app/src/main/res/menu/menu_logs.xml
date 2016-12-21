@@ -2,11 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:optionmenu="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_bluetooth"
-        android:title="Bluetooth"
-        optionmenu:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_logout"
-        android:title="Logout"
+        android:id="@+id/action_chat"
+        android:title="Chat"
         optionmenu:showAsAction="ifRoom" />
 </menu>
