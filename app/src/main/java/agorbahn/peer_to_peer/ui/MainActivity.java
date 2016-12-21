@@ -37,6 +37,7 @@ import agorbahn.peer_to_peer.adapters.ChatController;
 import agorbahn.peer_to_peer.adapters.LogDialogs;
 import agorbahn.peer_to_peer.adapters.MessageAdapter;
 import agorbahn.peer_to_peer.helper.AESHelper;
+import agorbahn.peer_to_peer.helper.FontManager;
 import agorbahn.peer_to_peer.models.ChatMessage;
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -155,6 +156,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+        mSend.setTypeface(FontManager.getTypeface(this,"fontawesome-webfont.ttf"));
+
         mSend.setOnClickListener(this);
     }
 
@@ -224,7 +227,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (mInput.getText().toString().equals("")) {
             Toast.makeText(MainActivity.this, "Please input some texts", Toast.LENGTH_SHORT).show();
         } else {
-            //TODO: here
             sendMessage(mInput.getText().toString());
             mInput.setText("");
         }
