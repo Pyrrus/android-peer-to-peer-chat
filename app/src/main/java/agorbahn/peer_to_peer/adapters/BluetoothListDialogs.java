@@ -8,9 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
-import android.os.Build;
-import android.support.v4.app.ActivityCompat;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -21,7 +18,6 @@ import android.widget.TextView;
 
 import java.util.Set;
 
-import agorbahn.peer_to_peer.Manifest;
 import agorbahn.peer_to_peer.R;
 
 /**
@@ -136,6 +132,7 @@ public class BluetoothListDialogs {
     public BluetoothListDialogs(BluetoothAdapter mBluetoothAdapter, ChatController chatController) {
         this.mBluetoothAdapter = mBluetoothAdapter;
         this.mChatController = chatController;
+
 
         mDiscovery = new BroadcastReceiver() {
             @Override

@@ -58,7 +58,6 @@ Have landscape mode when the device on the horizontal.
 ## Bugs
 * if using Android 2.1. It will not work. (Look in Setup)
 * Will sometime connect back when send text and missing the send text.
-* Newest Android verson like android 6. it will not display discovered devices list.
 
 ## Setup/Installation Requirements
 

@@ -1,5 +1,6 @@
 package agorbahn.peer_to_peer.ui;
 
+import android.Manifest;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -7,13 +8,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -190,6 +191,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void bluetoothSearch() {
         BluetoothListDialogs display = new BluetoothListDialogs(mBluetoothAdapter, chatController);
+        int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
+        // only way to work witn android v. 6
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},1001);
         display.show(this);
         chatController = display.getChatController();
     }
@@ -226,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         if (mInput.getText().toString().equals("")) {
-            Toast.makeText(MainActivity.this, "Please input some texts", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please input some texts", Toast.LENGTH_SHORT).show();
         } else {
             sendMessage(mInput.getText().toString());
             mInput.setText("");
