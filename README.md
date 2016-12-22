@@ -57,7 +57,6 @@ Have landscape mode when the device on the horizontal.
 
 ## Bugs
 * if using Android 2.1. It will not work. (Look in Setup)
-* Will sometime connect back when send text and missing the send text.
 
 ## Setup/Installation Requirements
 
