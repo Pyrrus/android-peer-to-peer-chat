@@ -8,6 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.os.Build;
+import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -18,6 +21,7 @@ import android.widget.TextView;
 
 import java.util.Set;
 
+import agorbahn.peer_to_peer.Manifest;
 import agorbahn.peer_to_peer.R;
 
 /**
@@ -137,7 +141,6 @@ public class BluetoothListDialogs {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
-
                 if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
@@ -165,4 +168,5 @@ public class BluetoothListDialogs {
     public ChatController getChatController() {
         return mChatController;
     }
+
 }

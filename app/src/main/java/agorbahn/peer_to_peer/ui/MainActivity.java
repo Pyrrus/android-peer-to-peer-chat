@@ -53,10 +53,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Bind(R.id.list_of_messages) ListView mListView;
     @Bind(R.id.send) Button mSend;
     @Bind(R.id.input) EditText mInput;
-    FirebaseUser userFire;
+    private FirebaseUser userFire;
     private FirebaseListAdapter<ChatMessage> fireAdapter;
-    AESHelper mEncryption;
-    String mUser;
+    private AESHelper mEncryption;
+    private String mUser;
+    private int mTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -237,12 +238,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Connection was lost!", Toast.LENGTH_SHORT).show();
             if (mDevice != null) {
                 chatController.connect(mDevice);
-                byte[] send = makeJSON(message).getBytes();
-                chatController.write(send);
+                sendMessage(message);
             }
+            return;
         }
 
         if (message.length() > 0) {
+            mTime = 0;
             byte[] send = makeJSON(message).getBytes();
             chatController.write(send);
         }

@@ -29,6 +29,7 @@ tools:context="agorbahn.peer_to_peer.ui.MainActivity">
     android:divider="@android:color/transparent"
     android:id="@+id/list_of_messages"
     android:layout_above="@+id/send"
+    android:layout_marginBottom="10dp"
      />
 
     <Button
