@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private FirebaseListAdapter<ChatMessage> fireAdapter;
     private AESHelper mEncryption;
     private String mUser;
-    private int mTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +69,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Bluetooth is not available!", Toast.LENGTH_SHORT).show();
             finish();
         }
+
+        // only way to work witn android v. 6
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},1001);
 
         mEncryption = new AESHelper();
         userFire = FirebaseAuth.getInstance()
@@ -153,6 +156,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Toast.makeText(getApplicationContext(), msg.getData().getString("toast"),
                                 Toast.LENGTH_SHORT).show();
                         break;
+                    case Constants.MESSAGE_LOST:
+                        ChatController.sleep(500);
+                        Toast.makeText(getApplicationContext(), "Reconnected", Toast.LENGTH_SHORT).show();
+                        chatController.connect(mDevice);
+                        break;
                 }
                 return false;
             }
@@ -191,10 +199,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void bluetoothSearch() {
         BluetoothListDialogs display = new BluetoothListDialogs(mBluetoothAdapter, chatController);
-        int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
-        // only way to work witn android v. 6
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},1001);
         display.show(this);
         chatController = display.getChatController();
     }
@@ -215,9 +219,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onResume();
 
         if (chatController != null) {
-            if (chatController.getState() == Constants.STATE_NONE) {
-                chatController.start();
-            }
+            if (chatController.getState() == Constants.STATE_NONE) chatController.start();
         }
     }
 
@@ -241,15 +243,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void sendMessage(String message) {
         if (chatController.getState() != Constants.STATE_CONNECTED) {
             Toast.makeText(this, "Connection was lost!", Toast.LENGTH_SHORT).show();
-            if (mDevice != null) {
-                chatController.connect(mDevice);
-                sendMessage(message);
-            }
             return;
         }
 
         if (message.length() > 0) {
-            mTime = 0;
             byte[] send = makeJSON(message).getBytes();
             chatController.write(send);
         }

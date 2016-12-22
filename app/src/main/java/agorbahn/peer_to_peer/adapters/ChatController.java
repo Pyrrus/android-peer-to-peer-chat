@@ -85,6 +85,14 @@ public class ChatController {
         setState(Constants.STATE_CONNECTING);
     }
 
+    public static void sleep(long time) {
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void connected(BluetoothSocket socket, BluetoothDevice device) {
         if (mConnectThread != null) {
             mConnectThread.cancel();
