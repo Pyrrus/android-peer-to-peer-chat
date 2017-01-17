@@ -48,6 +48,8 @@ public class MessageAdapter extends ArrayAdapter<ChatMessage> {
             // Format the date before showing it
             messageTime.setText(DateFormat.format("dd-MM-yyyy",
                     chatMessage.getMessageTime()));
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }

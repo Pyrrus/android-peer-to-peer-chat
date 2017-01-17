@@ -37,6 +37,7 @@ import agorbahn.peer_to_peer.adapters.BluetoothListDialogs;
 import agorbahn.peer_to_peer.adapters.ChatController;
 import agorbahn.peer_to_peer.adapters.LogDialogs;
 import agorbahn.peer_to_peer.adapters.MessageAdapter;
+import agorbahn.peer_to_peer.command.Command;
 import agorbahn.peer_to_peer.helper.AESHelper;
 import agorbahn.peer_to_peer.helper.FontManager;
 import agorbahn.peer_to_peer.models.ChatMessage;
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private FirebaseListAdapter<ChatMessage> fireAdapter;
     private AESHelper mEncryption;
     private String mUser;
+    private Command mCommand;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Bluetooth is not available!", Toast.LENGTH_SHORT).show();
             finish();
         }
+
+        mCommand = new Command();
 
         // only way to work witn android v. 6
         ActivityCompat.requestPermissions(this,
@@ -146,6 +150,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         byte[] readBuf = (byte[]) msg.obj;
                         String readMessage = new String(readBuf, 0, msg.arg1);
                         jsonMessage(readMessage, false);
+                        AESHelper encryption = new AESHelper();
+                        try {
+                            JSONObject messageJSON = new JSONObject(readMessage);
+                            String key = encryption.decrypt(Constants.ENCRYPT_SEED, messageJSON.get("key").toString());
+                            String message2 =  encryption.decrypt(key, messageJSON.get("message").toString());
+                            mCommand.type(message2, MainActivity.this);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+
                         break;
                     case Constants.MESSAGE_DEVICE_OBJECT:
                         mDevice = msg.getData().getParcelable(Constants.DEVICE_OBJECT);
@@ -291,7 +308,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mChatMessages.add(message);
                 mChatAdapter.notifyDataSetChanged();
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
         } catch (Exception e) {
