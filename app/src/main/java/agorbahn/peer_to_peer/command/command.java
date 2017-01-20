@@ -5,6 +5,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Handler;
 import android.os.Vibrator;
 
 import java.io.IOException;
@@ -13,6 +14,16 @@ import java.io.IOException;
  * Created by Adam on 1/17/2017.
  */
 public class Command {
+
+    private int startFrom = 0;
+    private int endAt = 4000;
+    private MediaPlayer mMediaPlayer;
+
+    private Runnable stopAt = new Runnable(){
+        @Override
+        public void run() {
+            mMediaPlayer.pause();
+        }};
 
     public void type(String message, Context context) {
         message = message.toLowerCase();
@@ -32,7 +43,7 @@ public class Command {
             IllegalStateException,
             IOException {
 
-        MediaPlayer mMediaPlayer = new MediaPlayer();
+        mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setDataSource(context, soundUri);
         final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
@@ -41,12 +52,14 @@ public class Command {
             mMediaPlayer.setLooping(true);
             mMediaPlayer.prepare();
             mMediaPlayer.start();
+            Handler handler = new Handler();
+            handler.postDelayed(stopAt, endAt);
         }
     }
 
     public void playVibrate(Context context) {
         Vibrator v = (Vibrator) context.getSystemService(context.VIBRATOR_SERVICE);
-        v.vibrate(1000);
+        v.vibrate(endAt);
     }
 
     public void playNotification(Context context) {

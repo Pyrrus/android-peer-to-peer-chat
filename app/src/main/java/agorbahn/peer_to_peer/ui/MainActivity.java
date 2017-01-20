@@ -1,7 +1,6 @@
 package agorbahn.peer_to_peer.ui;
 
 import android.Manifest;
-import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
@@ -10,19 +9,17 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.text.format.DateFormat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseListAdapter;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -35,7 +32,6 @@ import agorbahn.peer_to_peer.Constants;
 import agorbahn.peer_to_peer.R;
 import agorbahn.peer_to_peer.adapters.BluetoothListDialogs;
 import agorbahn.peer_to_peer.adapters.ChatController;
-import agorbahn.peer_to_peer.adapters.LogDialogs;
 import agorbahn.peer_to_peer.adapters.MessageAdapter;
 import agorbahn.peer_to_peer.command.Command;
 import agorbahn.peer_to_peer.helper.AESHelper;
@@ -52,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ChatController chatController;
     private MessageAdapter mChatAdapter;
     private ArrayList<ChatMessage> mChatMessages;
-    @Bind(R.id.list_of_messages) ListView mListView;
+    @Bind(R.id.list_of_messages) RecyclerView mListView;
     @Bind(R.id.send) Button mSend;
     @Bind(R.id.input) EditText mInput;
     private FirebaseUser userFire;
@@ -60,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private AESHelper mEncryption;
     private String mUser;
     private Command mCommand;
+    private LinearLayoutManager mLinearLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,48 +76,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},1001);
 
         mEncryption = new AESHelper();
-        userFire = FirebaseAuth.getInstance()
-                .getCurrentUser();
 
-        if (userFire != null) {
-            mUser = FirebaseAuth.getInstance()
-                    .getCurrentUser()
-                    .getDisplayName();
-
-            fireAdapter = new FirebaseListAdapter<ChatMessage>(this, ChatMessage.class,
-                    R.layout.message, FirebaseDatabase.getInstance().getReference()) {
-                @Override
-                protected void populateView(View v, ChatMessage model, int position) {
-                    // Get references to the views of message.xml
-                    TextView messageText = (TextView)v.findViewById(R.id.message_text);
-                    TextView messageUser = (TextView)v.findViewById(R.id.message_user);
-                    TextView messageTime = (TextView)v.findViewById(R.id.message_time);
-
-                    try {
-                        String key = mEncryption.decrypt(Constants.ENCRYPT_SEED, model.getKey());
-                        String message =  mEncryption.decrypt(key, model.getMessageText());
-                        // Set their text
-                        messageText.setText(message);
-                        messageUser.setText(model.getMessageUser());
-
-                        // Format the date before showing it
-                        messageTime.setText(DateFormat.format("dd-MM-yyyy",
-                                model.getMessageTime()));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-
-            mListView.setAdapter(fireAdapter);
-
-            Toast.makeText(this, "Welcome back " + mUser, Toast.LENGTH_SHORT).show();
-        } else {
-            mUser = "";
-            mChatMessages = new ArrayList<ChatMessage>();
-            mChatAdapter = new MessageAdapter(this, mChatMessages);
-            mListView.setAdapter(mChatAdapter);
-        }
+        mUser = "";
+        mChatMessages = new ArrayList<ChatMessage>();
+        mChatAdapter = new MessageAdapter(this, mChatMessages);
+        mListView.setAdapter(mChatAdapter);
+        mLinearLayoutManager = new LinearLayoutManager(this);
+        mListView.setLayoutManager(mLinearLayoutManager);
 
 
         mHandler = new Handler(new Handler.Callback() {
@@ -196,12 +158,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return true;
         }
 
-        if (id == R.id.action_log) {
-            LogDialogs test = new LogDialogs();
-            FragmentManager manager = getFragmentManager();
-
-            test.show(manager, "");
-        }
+//        if (id == R.id.action_log) {
+//            LogDialogs test = new LogDialogs();
+//            FragmentManager manager = getFragmentManager();
+//
+//            test.show(manager, "");
+//        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -297,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void jsonMessage(String jsonData, boolean write) {
         try {
             JSONObject messageJSON = new JSONObject(jsonData);
-            ChatMessage message = new ChatMessage(messageJSON.get("message").toString(), messageJSON.get("from").toString(), messageJSON.get("key").toString());
+            ChatMessage message = new ChatMessage(messageJSON.get("message").toString(), messageJSON.get("from").toString(), messageJSON.get("key").toString(), write);
 
             if (userFire != null && !write) {
                 FirebaseDatabase.getInstance()
