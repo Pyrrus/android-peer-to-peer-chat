@@ -27,7 +27,7 @@ public class Command {
 
     public void type(String message, Context context) {
         message = message.toLowerCase();
-        if (message.equals("rigntone")) {
+        if (message.equals("ringtone")) {
             playRigntone(context);
         } else if (message.equals("alarm")) {
             playAlarm(context);
