@@ -4,9 +4,11 @@ import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -57,12 +59,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String mUser;
     private Command mCommand;
     private LinearLayoutManager mLinearLayoutManager;
+    private boolean show;
+    private SharedPreferences mSharedPreferences;
+    private SharedPreferences.Editor mEditor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        show = false;
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, "Bluetooth is not available!", Toast.LENGTH_SHORT).show();
@@ -83,7 +89,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mListView.setAdapter(mChatAdapter);
         mLinearLayoutManager = new LinearLayoutManager(this);
         mListView.setLayoutManager(mLinearLayoutManager);
-
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mEditor = mSharedPreferences.edit();
 
         mHandler = new Handler(new Handler.Callback() {
             @Override
@@ -117,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             JSONObject messageJSON = new JSONObject(readMessage);
                             String key = encryption.decrypt(Constants.ENCRYPT_SEED, messageJSON.get("key").toString());
                             String message2 =  encryption.decrypt(key, messageJSON.get("message").toString());
-                            mCommand.type(message2, MainActivity.this);
+                            addToSharedPreferences(mCommand.type(message2, MainActivity.this));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         } catch (Exception e) {
@@ -275,5 +282,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void addToSharedPreferences(String type) {
+        mEditor.putString("type", type).apply();
     }
 }

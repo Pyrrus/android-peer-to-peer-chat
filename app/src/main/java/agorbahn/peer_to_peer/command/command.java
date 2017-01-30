@@ -25,7 +25,7 @@ public class Command {
             mMediaPlayer.pause();
         }};
 
-    public void type(String message, Context context) {
+    public String type(String message, Context context) {
         message = message.toLowerCase();
         if (message.equals("ringtone")) {
             playRigntone(context);
@@ -35,7 +35,11 @@ public class Command {
             playVibrate(context);
         } else if (message.equals("notification")) {
             playNotification(context);
+        } else if (message.equals("show")) {
+            return "true";
         }
+
+        return "false";
     }
 
     public void playSound(Context context, Uri soundUri) throws IllegalArgumentException,

@@ -1,6 +1,8 @@
 package agorbahn.peer_to_peer.adapters;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
@@ -54,6 +56,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageH
         @Bind(R.id.message_time) TextView mTime;
         private Context mContext;
         AESHelper encryption;
+        private SharedPreferences mSharedPreferences;
 
 
         public MessageHolder(View itemView) {
@@ -66,8 +69,16 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageH
 
         public void bindChat(ChatMessage chatMessage) {
             try {
-                String key = encryption.decrypt(Constants.ENCRYPT_SEED, chatMessage.getKey());
-                String message =  encryption.decrypt(key, chatMessage.getMessageText());
+                mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                String type = mSharedPreferences.getString("type", null);
+                String message;
+                String key;
+                if (type.equals("false")) {
+                    key = encryption.decrypt(Constants.ENCRYPT_SEED, chatMessage.getKey());
+                    message = encryption.decrypt(key, chatMessage.getMessageText());
+                } else {
+                    message = chatMessage.getMessageText();
+                }
                 // Set their text
                 mText.setText(message);
 
@@ -75,13 +86,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageH
                     mTime.setText(chatMessage.getMessageUser());
 
                     // Format the date before showing it
-                    mUser.setText(DateFormat.format("dd-MM-yyyy",
+                    mUser.setText(DateFormat.format("HH:mm:ss",
                             chatMessage.getMessageTime()));
                 } else {
                     mUser.setText(chatMessage.getMessageUser());
 
                     // Format the date before showing it
-                    mTime.setText(DateFormat.format("dd-MM-yyyy",
+                    mTime.setText(DateFormat.format("HH:mm:ss",
                             chatMessage.getMessageTime()));
                 }
 
