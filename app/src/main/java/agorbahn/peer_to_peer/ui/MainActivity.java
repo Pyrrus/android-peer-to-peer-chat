@@ -21,10 +21,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.firebase.ui.database.FirebaseListAdapter;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.FirebaseDatabase;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -53,8 +49,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Bind(R.id.list_of_messages) RecyclerView mListView;
     @Bind(R.id.send) Button mSend;
     @Bind(R.id.input) EditText mInput;
-    private FirebaseUser userFire;
-    private FirebaseListAdapter<ChatMessage> fireAdapter;
     private AESHelper mEncryption;
     private String mUser;
     private Command mCommand;
@@ -82,8 +76,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},1001);
 
         mEncryption = new AESHelper();
-
-        mUser = "";
         mChatMessages = new ArrayList<ChatMessage>();
         mChatAdapter = new MessageAdapter(this, mChatMessages);
         mListView.setAdapter(mChatAdapter);
@@ -165,12 +157,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return true;
         }
 
-//        if (id == R.id.action_log) {
-//            LogDialogs test = new LogDialogs();
-//            FragmentManager manager = getFragmentManager();
-//
-//            test.show(manager, "");
-//        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -250,11 +236,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             json.put("key", random);
             json.put("message", message);
-            if (userFire != null) {
-                json.put("from", mUser);
-            } else {
-                json.put("from", mBluetoothAdapter.getName());
-            }
+            json.put("from", mBluetoothAdapter.getName());
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -268,15 +250,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             JSONObject messageJSON = new JSONObject(jsonData);
             ChatMessage message = new ChatMessage(messageJSON.get("message").toString(), messageJSON.get("from").toString(), messageJSON.get("key").toString(), write);
 
-            if (userFire != null && !write) {
-                FirebaseDatabase.getInstance()
-                        .getReference()
-                        .push()
-                        .setValue(message);
-            } else {
-                mChatMessages.add(message);
-                mChatAdapter.notifyDataSetChanged();
-            }
+            mChatMessages.add(message);
+            mChatAdapter.notifyDataSetChanged();
+
         } catch (JSONException e) {
             e.printStackTrace();
         } catch (Exception e) {
