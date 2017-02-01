@@ -27,15 +27,15 @@ public class Command {
 
     public String type(String message, Context context) {
         message = message.toLowerCase();
-        if (message.equals("ringtone")) {
+        if (message.equals("ringtone") || message.equals("ringtone ")) {
             playRigntone(context);
-        } else if (message.equals("alarm")) {
+        } else if (message.equals("alarm") || message.equals("alarm ")) {
             playAlarm(context);
-        } else if (message.equals("vibrate")) {
+        } else if (message.equals("vibrate") || message.equals("vibrate ")) {
             playVibrate(context);
-        } else if (message.equals("notification")) {
+        } else if (message.equals("notification") || message.equals("notification ")) {
             playNotification(context);
-        } else if (message.equals("show")) {
+        } else if (message.equals("show") || message.equals("show ")) {
             return "true";
         }
 
