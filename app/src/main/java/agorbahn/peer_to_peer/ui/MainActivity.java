@@ -5,14 +5,17 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,6 +27,7 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 import agorbahn.peer_to_peer.Constants;
@@ -56,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean show;
     private SharedPreferences mSharedPreferences;
     private SharedPreferences.Editor mEditor;
+    private static final int REQUEST_IMAGE_CAPTURE = 111;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mCommand = new Command();
 
-        // only way to work witn android v. 6
+        // only way to work within android v. 6
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},1001);
 
@@ -157,6 +162,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return true;
         }
 
+        if (id == R.id.action_photo) {
+            sendPhoto();
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -219,12 +229,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (message.length() > 0) {
-            byte[] send = makeJSON(message).getBytes();
+            byte[] send = makeJSON(message, "").getBytes();
             chatController.write(send);
         }
     }
 
-    private String makeJSON(String message) {
+    private void sendPhoto() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(this.getPackageManager()) != null) {
+
+            if (chatController.getState() != Constants.STATE_CONNECTED) {
+                Toast.makeText(this, "Connection was lost!", Toast.LENGTH_SHORT).show();
+                return;
+            } else {
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == this.RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            String image = encodeBitmap(imageBitmap);
+
+            if (chatController.getState() != Constants.STATE_CONNECTED) {
+                Toast.makeText(this, "Connection was lost!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (image.length() > 0) {
+                byte[] send = makeJSON("", image).getBytes();
+                chatController.write(send);
+            }
+        }
+    }
+
+    public String encodeBitmap(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        String imageEncoded = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+        return imageEncoded;
+    }
+
+    private String makeJSON(String message, String image) {
         JSONObject json = new JSONObject();
         String random = mEncryption.randomKey();
         try {
@@ -237,6 +286,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             json.put("key", random);
             json.put("message", message);
             json.put("from", mBluetoothAdapter.getName());
+            json.put("image", image);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -248,7 +298,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void jsonMessage(String jsonData, boolean write) {
         try {
             JSONObject messageJSON = new JSONObject(jsonData);
-            ChatMessage message = new ChatMessage(messageJSON.get("message").toString(), messageJSON.get("from").toString(), messageJSON.get("key").toString(), write);
+            ChatMessage message = new ChatMessage(messageJSON.get("message").toString(), messageJSON.get("from").toString(), messageJSON.get("key").toString(), write, messageJSON.get("image").toString());
 
             mChatMessages.add(message);
             mChatAdapter.notifyDataSetChanged();

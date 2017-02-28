@@ -10,27 +10,6 @@ android:paddingTop="@dimen/activity_vertical_margin"
 xmlns:app="http://schemas.android.com/apk/res-auto"
 tools:context="agorbahn.peer_to_peer.ui.MainActivity">
 
-    <EditText
-        android:layout_width="220dp"
-        android:layout_height="wrap_content"
-        android:hint="Input"
-        android:id="@+id/input"
-        android:textColor="@color/primaryText"
-        android:layout_alignTop="@+id/send"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-
-<android.support.v7.widget.RecyclerView
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_alignParentLeft="true"
-    android:dividerHeight="16dp"
-    android:divider="@android:color/transparent"
-    android:id="@+id/list_of_messages"
-    android:layout_above="@+id/send"
-    android:layout_marginBottom="10dp"
-     />
 
     <Button
         android:layout_width="wrap_content"
@@ -44,6 +23,26 @@ tools:context="agorbahn.peer_to_peer.ui.MainActivity">
         android:layout_alignParentEnd="true"
         android:text="@string/fa_paper_plane" />
 
+    <EditText
+        android:layout_width="220dp"
+        android:layout_height="wrap_content"
+        android:hint="Input"
+        android:id="@+id/input"
+        android:textColor="@color/primaryText"
+        android:layout_alignTop="@+id/send"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:dividerHeight="16dp"
+        android:divider="@android:color/transparent"
+        android:id="@+id/list_of_messages"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/send" />
 
 
 </RelativeLayout>

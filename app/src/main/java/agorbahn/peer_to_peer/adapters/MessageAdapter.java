@@ -2,14 +2,19 @@ package agorbahn.peer_to_peer.adapters;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import agorbahn.peer_to_peer.Constants;
@@ -54,6 +59,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageH
         @Bind(R.id.message_text) TextView mText;
         @Bind(R.id.message_user) TextView mUser;
         @Bind(R.id.message_time) TextView mTime;
+        @Bind(R.id.image) ImageView mImage;
         private Context mContext;
         AESHelper encryption;
         private SharedPreferences mSharedPreferences;
@@ -82,6 +88,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageH
                 // Set their text
                 mText.setText(message);
 
+                if (!chatMessage.getImageBitmap().equals("")) {
+                    mImage.setVisibility(View.VISIBLE);
+                    Bitmap imageBitmap = decodeFromBase64(chatMessage.getImageBitmap());
+                    mImage.setImageBitmap(imageBitmap);
+                }
+
                 if (chatMessage.getBy() == true) {
                     mTime.setText(chatMessage.getMessageUser());
 
@@ -99,6 +111,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageH
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+
+        public Bitmap decodeFromBase64(String image) throws IOException {
+            byte[] decodedByteArray = android.util.Base64.decode(image, Base64.DEFAULT);
+            return BitmapFactory.decodeByteArray(decodedByteArray, 0, decodedByteArray.length);
         }
 
     }

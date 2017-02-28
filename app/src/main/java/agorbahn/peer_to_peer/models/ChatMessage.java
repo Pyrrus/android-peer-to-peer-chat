@@ -12,13 +12,15 @@ public class ChatMessage {
     private String messageUser;
     private String key;
     private boolean by;
+    private String imageBitmap;
 
-    public ChatMessage(String messageText, String messageUser, String key, boolean by) {
+    public ChatMessage(String messageText, String messageUser, String key, boolean by, String imageBitmap) {
         this.messageText = messageText;
         this.messageUser = messageUser;
         this.by = by;
         this.key = key;
         messageTime = new Date().getTime();
+        this.imageBitmap = imageBitmap;
     }
 
     public boolean getBy() { return by; }
@@ -44,6 +46,12 @@ public class ChatMessage {
     public String getMessageUser() {
         return messageUser;
     }
+
+    public String getImageBitmap() { return imageBitmap; }
+
+    public void setImageBitmap(String imageBitmap) { this.imageBitmap = imageBitmap; }
+
+    public boolean isBy() { return by; }
 
     public void setMessageText(String messageText) {
         this.messageText = messageText;
