@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -33,6 +32,7 @@ import java.util.ArrayList;
 import agorbahn.peer_to_peer.Constants;
 import agorbahn.peer_to_peer.R;
 import agorbahn.peer_to_peer.adapters.BluetoothListDialogs;
+import agorbahn.peer_to_peer.adapters.CameraDialog;
 import agorbahn.peer_to_peer.adapters.ChatController;
 import agorbahn.peer_to_peer.adapters.MessageAdapter;
 import agorbahn.peer_to_peer.command.Command;
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean show;
     private SharedPreferences mSharedPreferences;
     private SharedPreferences.Editor mEditor;
-    private static final int REQUEST_IMAGE_CAPTURE = 111;
+    private CameraDialog mCamera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -214,11 +214,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if (mInput.getText().toString().equals("")) {
-            Toast.makeText(this, "Please input some texts", Toast.LENGTH_SHORT).show();
+        if (mCamera.getImage() == null) {
+            Toast.makeText(this, "no image", Toast.LENGTH_SHORT).show();
+
         } else {
-            sendMessage(mInput.getText().toString());
-            mInput.setText("");
+            Toast.makeText(this, "have image", Toast.LENGTH_SHORT).show();
+            sendImage(mCamera.getImage());
+        }
+
+//        if (mInput.getText().toString().equals("")) {
+//            Toast.makeText(this, "Please input some texts", Toast.LENGTH_SHORT).show();
+//        } else {
+//            sendMessage(mInput.getText().toString());
+//            mInput.setText("");
+//        }
+    }
+
+    public void sendImage(String image) {
+        if (chatController.getState() != Constants.STATE_CONNECTED) {
+            Toast.makeText(this, "Connection was lost!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (image.length() > 0) {
+            byte[] send = makeJSON("", image).getBytes();
+            chatController.write(send);
         }
     }
 
@@ -235,35 +255,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void sendPhoto() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(this.getPackageManager()) != null) {
-
-            if (chatController.getState() != Constants.STATE_CONNECTED) {
-                Toast.makeText(this, "Connection was lost!", Toast.LENGTH_SHORT).show();
-                return;
-            } else {
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-            }
+        if (chatController.getState() != Constants.STATE_CONNECTED) {
+            Toast.makeText(this, "Connection was lost!", Toast.LENGTH_SHORT).show();
+            return;
         }
-    }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == this.RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            String image = encodeBitmap(imageBitmap);
-
-            if (chatController.getState() != Constants.STATE_CONNECTED) {
-                Toast.makeText(this, "Connection was lost!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (image.length() > 0) {
-                byte[] send = makeJSON("", image).getBytes();
-                chatController.write(send);
-            }
-        }
+        mCamera = new CameraDialog();
+        mCamera.show(this);
     }
 
     public String encodeBitmap(Bitmap bitmap) {
