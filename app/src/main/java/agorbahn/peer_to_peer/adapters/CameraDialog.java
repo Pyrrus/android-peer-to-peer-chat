@@ -7,22 +7,17 @@ package agorbahn.peer_to_peer.adapters;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Base64;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.google.android.gms.vision.CameraSource;
-import com.google.android.gms.vision.Detector;
-import com.google.android.gms.vision.text.TextBlock;
-import com.google.android.gms.vision.text.TextRecognizer;
+import com.google.android.gms.vision.face.FaceDetector;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import agorbahn.peer_to_peer.R;
@@ -33,7 +28,16 @@ public class CameraDialog extends AppCompatActivity {
     private CameraSource cameraSource;
     private Button getpicture;
     private SurfaceView cameraView;
-    private String mImage;
+    private Bitmap mImage;
+    private String mSave = "f";
+
+    public String getSave() {
+        return mSave;
+    }
+
+    public void setSave(String mSave) {
+        this.mSave = mSave;
+    }
 
     public void show(Context context) {
         mContext = context;
@@ -45,26 +49,13 @@ public class CameraDialog extends AppCompatActivity {
 
         getpicture = (Button) mDialog.findViewById(R.id.getpicture);
 
-        TextRecognizer textRecognizer = new TextRecognizer.Builder(context).build();
-        textRecognizer.setProcessor(new Detector.Processor<TextBlock>() {
-            @Override
-            public void release() {
+        FaceDetector detector = new FaceDetector.Builder(context)
+                .setProminentFaceOnly(true)
+                .build();
 
-            }
-
-            @Override
-            public void receiveDetections(Detector.Detections<TextBlock> detections) {
-                Log.d("Main", "receiveDetections");
-            }
-        });
-
-        if (!textRecognizer.isOperational()) {
-            Log.w("MainActivity", "Detector dependencies are not yet available.");
-        }
-
-        cameraSource = new CameraSource.Builder(context, textRecognizer)
+        cameraSource = new CameraSource.Builder(context, detector)
                 .setFacing(CameraSource.CAMERA_FACING_BACK)
-                .setRequestedPreviewSize(1280, 1024)
+                .setRequestedPreviewSize(1020, 720)
                 .setRequestedFps(2.0f)
                 .setAutoFocusEnabled(true)
                 .build();
@@ -96,46 +87,28 @@ public class CameraDialog extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                takePic();
-                mDialog.dismiss();
+                cameraSource.takePicture(null, new CameraSource.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] bytes) {
+                        mSave = "t";
+                        mImage = BitmapFactory.decodeByteArray(bytes , 0, bytes.length);
+                    }
+                });
+
             }
         });
 
-        mDialog.setCancelable(false);
         mDialog.show();
 
     }
 
-    public void takePic() {
-//        Toast.makeText(mContext, "in takePic" , Toast.LENGTH_SHORT).show();
-        cameraSource.takePicture(null, new CameraSource.PictureCallback() {
-            @Override
-            public void onPictureTaken(byte[] bytes) {
-                Toast.makeText(mContext, "in taken image" , Toast.LENGTH_SHORT).show();
-            }
-        });
-
-//        new CameraSource.PictureCallback() {
-//            @Override
-//            public void onPictureTaken(byte[] bytes) {
-//                Toast.makeText(mContext, "in taken image" , Toast.LENGTH_SHORT).show();
-//                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-//                encodeBitmap(bmp);
-//            }
-//        });
-
+    public void setImage(Bitmap mImage) {
+        this.mImage = mImage;
     }
 
-
-
-    public void encodeBitmap(Bitmap bitmap) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        mImage = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
-    }
-
-    public String getImage() {
+    public Bitmap getImage() {
         return mImage;
     }
+
 
 }

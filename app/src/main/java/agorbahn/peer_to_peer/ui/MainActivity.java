@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -15,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -60,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean show;
     private SharedPreferences mSharedPreferences;
     private SharedPreferences.Editor mEditor;
+    private Bitmap mImage;
     private CameraDialog mCamera;
 
     @Override
@@ -75,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         mCommand = new Command();
+        mCamera = new CameraDialog();
 
         // only way to work within android v. 6
         ActivityCompat.requestPermissions(this,
@@ -214,31 +218,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if (mCamera.getImage() == null) {
-            Toast.makeText(this, "no image", Toast.LENGTH_SHORT).show();
 
+        if (mInput.getText().toString().equals("")) {
+            Toast.makeText(this, "Please input some texts", Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(this, "have image", Toast.LENGTH_SHORT).show();
-            sendImage(mCamera.getImage());
-        }
-
-//        if (mInput.getText().toString().equals("")) {
-//            Toast.makeText(this, "Please input some texts", Toast.LENGTH_SHORT).show();
-//        } else {
-//            sendMessage(mInput.getText().toString());
-//            mInput.setText("");
-//        }
-    }
-
-    public void sendImage(String image) {
-        if (chatController.getState() != Constants.STATE_CONNECTED) {
-            Toast.makeText(this, "Connection was lost!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (image.length() > 0) {
-            byte[] send = makeJSON("", image).getBytes();
-            chatController.write(send);
+            sendMessage(mInput.getText().toString());
+            mInput.setText("");
         }
     }
 
@@ -251,6 +236,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (message.length() > 0) {
             byte[] send = makeJSON(message, "").getBytes();
             chatController.write(send);
+//            if (mCamera.getSave().equals("f")) {
+//                byte[] send = makeJSON(message, "").getBytes();
+//                chatController.write(send);
+//            } else {
+//                String pic = encodeBitmap( mCamera.getImage());
+//                if (pic.length() > 0) {
+//                    byte[] send = makeJSON(message, pic).getBytes();
+//                    chatController.writeImage(send);
+//                    mCamera.setSave("f");
+//                }
+//            }
         }
     }
 
@@ -260,15 +256,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
 
-        mCamera = new CameraDialog();
+//        mCamera = new CameraDialog();
         mCamera.show(this);
+
     }
 
     public String encodeBitmap(Bitmap bitmap) {
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        options.inSampleSize = 2;  //you can also calculate your inSampleSize
+        options.inJustDecodeBounds = false;
+        options.inTempStorage = new byte[16 * 1024];
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        String imageEncoded = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
-        return imageEncoded;
+        bitmap = Bitmap.createScaledBitmap(bitmap, 300, 300, false);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] byteArrayImage = baos.toByteArray();
+        String base64String = Base64.encodeToString(byteArrayImage, Base64.DEFAULT);
+        return base64String;
     }
 
     private String makeJSON(String message, String image) {
@@ -281,22 +285,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
         }
         try {
+            json.put("image", image);
             json.put("key", random);
             json.put("message", message);
             json.put("from", mBluetoothAdapter.getName());
-            json.put("image", image);
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
+        Log.d("Make image", json.toString());
         return json.toString();
     }
 
     private void jsonMessage(String jsonData, boolean write) {
         try {
+            final BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            options.inSampleSize = 2;  //you can also calculate your inSampleSize
+            options.inJustDecodeBounds = false;
+            options.inTempStorage = new byte[16 * 1024];
+            Log.d("string test", jsonData);
             JSONObject messageJSON = new JSONObject(jsonData);
-            ChatMessage message = new ChatMessage(messageJSON.get("message").toString(), messageJSON.get("from").toString(), messageJSON.get("key").toString(), write, messageJSON.get("image").toString());
+            ChatMessage message = new ChatMessage(messageJSON.get("message").toString(),messageJSON.get("from").toString(), messageJSON.get("key").toString(), write, messageJSON.get("image").toString());
 
             mChatMessages.add(message);
             mChatAdapter.notifyDataSetChanged();
