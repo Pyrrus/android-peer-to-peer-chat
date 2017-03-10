@@ -15,17 +15,38 @@ user input      | output
 --------------- | -------------
 Click on 'Bluetooth' icon | will make list of Bluetooth to make a connect to android.  
 
-#### 'log' Bar
-
 user input      | output
 --------------- | -------------
-Click on 'chat' icon | will go to chat room.  
+Click on 'Camera' icon | will make camera view using dialog box. 
+
+#### 'Bluetooth' dialog box
+
+user input     | output
+--------------- | -------------
+Click on phone name/bluetooth id | will pair both phones.
+
+
+user input    | output
+--------------- | -------------
+Click on Cancel button | will close bluetooth dialog box.
+
+#### 'Camera' dialog box
+
+user input    | output
+--------------- | -------------
+Click on 'Get Image' button | will make image and close dialog box.
+
+
 
 #### 'home' Activity
 
 user input                       | output
 -------------------------------- | -------------
-input text | will make send data to other android with your input
+input text | text for massage for other android.
+
+user input          | output
+---------------------|-----------------
+click on Send button |  will make send data to other android with your input text.
 
 
 ## Bugs

@@ -28,7 +28,6 @@ public class ChatController {
     private Accept mAcceptThread;
     private Connect mConnectThread;
     private ReadWrite mConnectedThread;
-    private ReadWriteImage mConnectedThreadImage;
     private int mState;
     public static final UUID MY_UUID = UUID.fromString("4800fe5d-f6f1-4aab-9cd6-7aebd87eb306");
 
@@ -61,12 +60,6 @@ public class ChatController {
             mConnectedThread = null;
         }
 
-        if (mConnectedThreadImage != null) {
-            mConnectedThreadImage.cancel();
-            mConnectedThreadImage = null;
-        }
-
-
 
         setState(Constants.STATE_LISTEN);
         if (mAcceptThread == null) {
@@ -88,11 +81,6 @@ public class ChatController {
             mConnectedThread = null;
         }
 
-        if (mConnectedThreadImage != null) {
-            mConnectedThreadImage.cancel();
-            mConnectedThreadImage = null;
-        }
-
         mConnectThread = new Connect(device);
         mConnectThread.start();
         setState(Constants.STATE_CONNECTING);
@@ -112,11 +100,6 @@ public class ChatController {
             mConnectThread = null;
         }
 
-        if (mConnectedThreadImage != null) {
-            mConnectedThreadImage.cancel();
-            mConnectedThreadImage = null;
-        }
-
         if (mConnectedThread != null) {
             mConnectedThread.cancel();
             mConnectedThread = null;
@@ -129,9 +112,6 @@ public class ChatController {
 
         mConnectedThread = new ReadWrite(socket);
         mConnectedThread.start();
-
-        mConnectedThreadImage = new ReadWriteImage(socket);
-        mConnectedThreadImage.start();
 
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_DEVICE_OBJECT);
         Bundle bundle = new Bundle();
@@ -170,15 +150,6 @@ public class ChatController {
         r.write(out);
     }
 
-    public void writeImage(byte[] out) {
-        ReadWriteImage r;
-        synchronized (this) {
-            if (mState != Constants.STATE_CONNECTED)
-                return;
-            r = mConnectedThreadImage;
-        }
-        r.writeTEST(out);
-    }
 
     private void connectionFailed() {
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
@@ -331,72 +302,31 @@ public class ChatController {
                     break;
                 }
             }
+
+//            byte[] buffer = new byte[1024];
+//            byte[] imgBuffer = new byte[1024 * 1024];
+//            int pos = 0;
+//
+//            // Keep listening to the InputStream while connected
+//            while (true) {
+//                try {
+//                    // Read from the InputStream
+//                    int bytes = inputStream.read(buffer);
+//                    System.arraycopy(buffer,0,imgBuffer,pos,bytes);
+//                    pos += bytes;
+//
+//                    mHandler.obtainMessage(Constants.MESSAGE_READ,
+//                            pos, -1, imgBuffer).sendToTarget();
+//
+//                } catch (IOException e) {
+//                    connectionLost();
+//                    break;
+//                }
+//            }
+
         }
 
         public void write(byte[] buffer) {
-            try {
-                outputStream.write(buffer);
-                mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1,
-                        buffer).sendToTarget();
-                outputStream.flush();
-            } catch (IOException e) {
-            }
-        }
-
-        public void cancel() {
-            try {
-                bluetoothSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public class ReadWriteImage extends Thread {
-        private final BluetoothSocket bluetoothSocket;
-        private InputStream inputStream;
-        private OutputStream outputStream;
-
-        public ReadWriteImage(BluetoothSocket socket) {
-            this.bluetoothSocket = socket;
-            InputStream tmpIn = null;
-            OutputStream tmpOut = null;
-
-            try {
-                tmpIn = socket.getInputStream();
-                tmpOut = socket.getOutputStream();
-            } catch (IOException e) {
-            }
-
-            inputStream = tmpIn;
-            outputStream = tmpOut;
-        }
-
-
-        public void run() {
-            byte[] buffer = new byte[1024];
-            byte[] imgBuffer = new byte[1024 * 1024];
-            int pos = 0;
-
-            // Keep listening to the InputStream while connected
-            while (true) {
-                try {
-                    // Read from the InputStream
-                    int bytes = inputStream.read(buffer);
-                    System.arraycopy(buffer,0,imgBuffer,pos,bytes);
-                    pos += bytes;
-
-                    mHandler.obtainMessage(Constants.MESSAGE_READ,
-                            pos, -1, imgBuffer).sendToTarget();
-
-                } catch (IOException e) {
-                    connectionLost();
-                    break;
-                }
-            }
-        }
-
-        public void writeTEST(byte[] buffer) {
             try {
                 outputStream.write(buffer);
                 mHandler.obtainMessage(Constants.MESSAGE_WRITE, -1, -1,
